@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indodax Kripto Mudah Aman Cuan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background: url('https://i.imghippo.com/files/Iahj5854RjY.jpg') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: white;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Overlay gelap untuk meningkatkan keterbacaan teks */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+        
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .main-content {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px none;
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 3px none;
+        }
+        
+        .footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        
+        /* Loading Container */
+        .loading-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: none;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 300px;
+            box-shadow: 0 10px 25px none;
+            backdrop-filter: blur(0px);
+        }
+        
+        .loading-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        
+        .loading-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #1a73e8, #34a853);
+            border-radius: 4px;
+            animation: loading 3s linear forwards;
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        
+        .countdown {
+            font-size: 1.1rem;
+            margin-top: 15px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #1a73e8;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .loading-container {
+                min-width: 250px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"></div>
+        <div class="logo"></div>
+    </div>
+    
+    <div class="main-content">
+        <h1 class="title"></h1>
+        <p class="subtitle"></p>
+    </div>
+    
+    
+    
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <h2 class="loading-title"></h2>
+        <p></p>
+        <div class="loading-bar-container">
+            <div class="loading-bar"></div>
+        </div>
+        <div class="countdown"> <span id="countdown"></span></div>
+    </div>
+
+    <script>
+        // Mengatur countdown
+        let countdown = 3;
+        const countdownElement = document.getElementById('countdown');
+        
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                // Redirect ke halaman berikutnya
+                window.location.href = "selanjutnya1.html"; // Ganti dengan URL halaman berikutnya
+            }
+        }, 1000);
+        
+        // Mengalihkan setelah 3 detik
+        setTimeout(() => {
+            window.location.href = "selanjutnya1.html"; // Ganti dengan URL halaman berikutnya
+        }, 3000);
+    </script>
+</body>
+</html>
